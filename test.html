@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet Layers Control Example</title>
+	<meta charset="utf-8" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="leaflet.css" />
+	<!--[if lte IE 8]><link rel="stylesheet" href="leaflet.ie.css" /><![endif]-->
+	<!--[if lte IE 9]><link rel="stylesheet" href="leaflet.ie.css" /><![endif]-->
+	<!--[if lte IE 10]><link rel="stylesheet" href="leaflet.ie.css" /><![endif]-->
+	
+
+	<style>
+		#map {
+			width: 900px;
+			height: 650px;
+		}
+
+		.info {
+			padding: 6px 8px;
+			font: 14px/16px Arial, Helvetica, sans-serif;
+			background: white;
+			background: rgba(255,255,255,0.8);
+			box-shadow: 0 0 15px rgba(0,0,0,0.2);
+			border-radius: 5px;
+		}
+		.info h4 {
+			margin: 0 0 5px;
+			color: #777;
+		}
+
+		.legend {
+			text-align: left;
+			line-height: 18px;
+			color: #555;
+		}
+		.legend i {
+			width: 18px;
+			height: 18px;
+			float: left;
+			margin-right: 8px;
+			opacity: 0.7;
+		}
+		.r {
+			background: orange;
+		}
+		.r1 {
+			background: #CCFF99;
+		}
+		.r2 {
+			background: #FFFFFF;
+		}
+
+		
+	</style>
+</head>
+<body>
+	<div id="map"></div>
+
+	<script src="http://cdn.leafletjs.com/leaflet-0.4.5/leaflet.js"></script>
+	<script src="scripts/us_states.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+	
+
+	
+	<script src="USstates.js"></script>
+	
+	<script type="text/javascript">
+	
+		//map
+
+		var map = L.map('map', {
+		minZoom: 4,
+		maxZoom: 6
+		}).setView([37.8, -96], 4);
+
+		var cloudmade = L.tileLayer('http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png', {
+			attribution: 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2011 CloudMade',
+			key: 'BC9A493B41014CAABB98F0471D759707',
+			styleId: 22677
+		}).addTo(map);
+
+		
+			// control that shows state info on hover
+var info = L.control();
+
+		info.onAdd = function (map) {
+			this._div = L.DomUtil.create('div', 'info');
+			this.update();
+			return this._div;
+		};
+
+		info.update = function (props) {
+			this._div.innerHTML = (props ?
+				'<b>' + props.name + '</b>'
+				: 'Hover over');
+		};
+
+		info.addTo(map);
+		
+	
+		
+
+		function style(feature) {
+			return {
+				weight: 2,
+				opacity: 0.5,
+				color: '#369EE3',
+				dashArray: '3',
+				fillOpacity: 0.1,
+				fillColor: 'orange',
+			};
+		}
+
+
+		function highlightFeature(e) {
+			var layer = e.target;
+
+			layer.setStyle({
+				weight: 3,
+				color: 'black',
+				dashArray: '',
+				fillOpacity: 0.1
+			});
+
+			if (!L.Browser.ie && !L.Browser.opera) {
+				layer.bringToFront();
+			}
+
+			info.update(layer.feature.properties);
+		}
+
+		var geojson;
+
+		function resetHighlight(e) {
+			geojson.resetStyle(e.target);
+			info.update();
+		}
+
+		function zoomToFeature(e) {
+			map.fitBounds(e.target.getBounds());
+		}
+
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mouseover: highlightFeature,
+				mouseout: resetHighlight,
+			
+			});
+		}
+		
+	
+		
+		geojson = L.geoJson(USAstates, {
+			style: style,
+			maxZoom: 6,
+			onEachFeature: onEachFeature
+		}).addTo(map);
+		
+		
+		
+		geojson.on("click", function (e) {
+			
+			var popupContent = '<b>' + e.layer.feature.properties.name + '</b><br><table>';
+			
+				
+			e.layer.bindPopup(popupContent);
+			e.layer.openPopup();
+		    
+		}).addTo(map);
+
+	
+
+		
+
+
+	
+
+	</script>
+
+	
+
+	
+</body>
+</html>
